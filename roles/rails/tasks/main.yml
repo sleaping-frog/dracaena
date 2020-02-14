@@ -1,0 +1,6 @@
+- name: depends
+  dnf:
+    name:
+      - gcc-c++
+      - sqlite-devel
+  become: true

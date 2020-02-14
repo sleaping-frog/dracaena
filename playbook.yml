@@ -4,3 +4,4 @@
     - role: rbenv
     - role: nodejs
     - role: yarn
+    - role: rails
