@@ -1,0 +1,36 @@
+---
+- hosts: all
+  tasks:
+    - name: rbenv | install dependencies
+      dnf:
+        name:
+          - bzip2
+          - curl
+          - gcc
+          - gdbm-devel
+          - git
+          - libffi-devel
+          - libyaml-devel
+          - ncurses-devel
+          - openssl-devel
+          - readline-devel
+          - zlib-devel
+        enablerepo: PowerTools
+        update_cache: true
+      become: true
+
+    - name: rbenv | clone repos
+      git:
+        repo: "{{ item.repo }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { repo: "https://github.com/rbenv/rbenv.git",      dest: "{{ ansible_env.HOME }}/.rbenv" }
+        - { repo: "https://github.com/rbenv/ruby-build.git", dest: "{{ ansible_env.HOME }}/.rbenv/plugins/ruby-build" }
+
+    - name: rbenv | profile
+      blockinfile:
+        marker: "# rbenv {mark}"
+        path:   "{{ ansible_env.HOME }}/.bash_profile"
+        block: |
+          export PATH="{{ ansible_env.HOME }}/.rbenv/bin:$PATH"
+          eval "$(rbenv init -)"
