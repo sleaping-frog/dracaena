@@ -1,4 +1,4 @@
-- name: rbenv | install dependencies
+- name: install dependencies
   dnf:
     name:
       - bzip2
@@ -16,7 +16,7 @@
     update_cache: true
   become: true
 
-- name: rbenv | clone repos
+- name: clone repos
   git:
     repo: "{{ item.repo }}"
     dest: "{{ item.dest }}"
@@ -24,7 +24,7 @@
     - { repo: "https://github.com/rbenv/rbenv.git",      dest: "{{ ansible_env.HOME }}/.rbenv" }
     - { repo: "https://github.com/rbenv/ruby-build.git", dest: "{{ ansible_env.HOME }}/.rbenv/plugins/ruby-build" }
 
-- name: rbenv | profile
+- name: profile
   blockinfile:
     marker: "# rbenv {mark}"
     path:   "{{ ansible_env.HOME }}/.bash_profile"
@@ -32,24 +32,24 @@
       export PATH="{{ ansible_env.HOME }}/.rbenv/bin:$PATH"
       eval "$(rbenv init -)"
 
-- name: rbenv | check versions
+- name: check versions
   shell: /bin/bash -lc "{{ ansible_env.HOME }}/.rbenv/bin/rbenv versions --bare"
   register: rbenv_versions
   changed_when: false
   failed_when: false
 
-- name: rbenv | install ruby
+- name: install ruby
   shell: /bin/bash -lc "{{ ansible_env.HOME }}/.rbenv/bin/rbenv install --skip-existing {{ item }}"
   with_items:
     - 2.7.0
   when: "item not in rbenv_versions.stdout"
 
-- name: rbenv | check global
+- name: check global
   shell: /bin/bash -lc "{{ ansible_env.HOME }}/.rbenv/bin/rbenv global"
   register: rbenv_global
   changed_when: false
   failed_when: false
 
-- name: rbenv | set global
+- name: set global
   shell: /bin/bash -lc "{{ ansible_env.HOME }}/.rbenv/bin/rbenv global 2.7.0 && {{ ansible_env.HOME }}/.rbenv/bin/rbenv rehash"
   when: "'2.7.0' not in rbenv_global.stdout"
