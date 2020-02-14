@@ -1,0 +1,24 @@
+- name: rpm key
+  rpm_key:
+    key: http://rpm.nodesource.com/pub/el/NODESOURCE-GPG-SIGNING-KEY-EL
+    state: present
+  become: true
+
+- name: nodesource repo
+  dnf:
+    name: https://rpm.nodesource.com/pub_12.x/el/8/x86_64/nodesource-release-el8-1.noarch.rpm
+  become: true
+
+- name: disable AppStream module
+  shell: dnf module disable -y nodejs
+  register: module_disable
+  changed_when: "'Nothing to do.' not in module_disable.stdout"
+  become: true
+  args:
+    warn: false
+
+- name: install
+  dnf:
+    name: nodejs
+  become: true
+
