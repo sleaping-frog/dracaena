@@ -1,17 +1,6 @@
 - name: install dependencies
   dnf:
-    name:
-      - bzip2
-      - curl
-      - gcc
-      - gdbm-devel
-      - git
-      - libffi-devel
-      - libyaml-devel
-      - ncurses-devel
-      - openssl-devel
-      - readline-devel
-      - zlib-devel
+    name: "{{ rbenv_depend_packages }}"
     enablerepo: PowerTools
     update_cache: true
   become: true
@@ -21,35 +10,36 @@
     repo: "{{ item.repo }}"
     dest: "{{ item.dest }}"
   with_items:
-    - { repo: "https://github.com/rbenv/rbenv.git",      dest: "{{ ansible_env.HOME }}/.rbenv" }
-    - { repo: "https://github.com/rbenv/ruby-build.git", dest: "{{ ansible_env.HOME }}/.rbenv/plugins/ruby-build" }
+    - { repo: "https://github.com/rbenv/rbenv.git",      dest: "{{ rbenv_root }}" }
+    - { repo: "https://github.com/rbenv/ruby-build.git", dest: "{{ rbenv_root }}/plugins/ruby-build" }
 
 - name: profile
   blockinfile:
     marker: "# rbenv {mark}"
     path:   "{{ ansible_env.HOME }}/.bash_profile"
     block: |
-      export PATH="{{ ansible_env.HOME }}/.rbenv/bin:$PATH"
+      export PATH="{{ rbenv_root }}/bin:$PATH"
       eval "$(rbenv init -)"
 
 - name: check versions
-  shell: /bin/bash -lc "{{ ansible_env.HOME }}/.rbenv/bin/rbenv versions --bare"
+  shell: /bin/bash -lc "{{ rbenv_root }}/bin/rbenv versions --bare"
   register: rbenv_versions
   changed_when: false
   failed_when: false
 
+- import_tasks: old_openssl.yml
+
 - name: install ruby
-  shell: /bin/bash -lc "{{ ansible_env.HOME }}/.rbenv/bin/rbenv install --skip-existing {{ item }}"
-  with_items:
-    - 2.7.0
-  when: "item not in rbenv_versions.stdout"
+  shell: /bin/bash -lc "{{ item.opt }} {{ rbenv_root }}/bin/rbenv install --skip-existing {{ item.version }}"
+  with_items: "{{ rbenv_rubies }}"
+  when: "item.version not in rbenv_versions.stdout"
 
 - name: check global
-  shell: /bin/bash -lc "{{ ansible_env.HOME }}/.rbenv/bin/rbenv global"
+  shell: /bin/bash -lc "{{ rbenv_root }}/bin/rbenv global"
   register: rbenv_global
   changed_when: false
   failed_when: false
 
-- name: set global
-  shell: /bin/bash -lc "{{ ansible_env.HOME }}/.rbenv/bin/rbenv global 2.7.0 && {{ ansible_env.HOME }}/.rbenv/bin/rbenv rehash"
-  when: "'2.7.0' not in rbenv_global.stdout"
+- name: set global {{ rbenv_default }}
+  shell: /bin/bash -lc "{{ rbenv_root }}/bin/rbenv global {{ rbenv_default }} && {{ rbenv_root }}/bin/rbenv rehash"
+  when: "rbenv_default not in rbenv_global.stdout"

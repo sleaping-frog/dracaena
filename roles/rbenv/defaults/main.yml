@@ -1,0 +1,37 @@
+rbenv_root: "{{ ansible_env.HOME }}/.rbenv"
+
+rbenv_default: 2.7.0
+
+rbenv_rubies:
+  - { version: 2.7.0,      opt: "" }
+  - { version: 2.6.5,      opt: "" }
+  - { version: 2.5.7,      opt: "" }
+  - { version: 2.4.9,      opt: "" }
+  - { version: 2.3.8,      opt: "{{ rbenv_old_ruby_configure_opt }}" }
+  - { version: 2.2.10,     opt: "{{ rbenv_old_ruby_configure_opt }}" }
+  - { version: 2.1.10,     opt: "{{ rbenv_old_ruby_configure_opt }}" }
+  - { version: 2.0.0-p648, opt: "{{ rbenv_old_ruby_configure_opt }}" }
+  - { version: 1.9.3-p551, opt: "{{ rbenv_old_ruby_configure_opt }}" }
+  - { version: 1.9.2-p330, opt: "{{ rbenv_old_ruby_configure_opt }}" }
+  - { version: 1.8.7-p375, opt: "{{ rbenv_old_ruby_configure_opt }}" }
+
+rbenv_old_ruby_configure_opt: "RUBY_CONFIGURE_OPTS=--with-openssl-dir={{ old_openssl_path }}" 
+
+rbenv_depend_packages:
+  - bzip2
+  - curl
+  - gcc
+  - gdbm-devel
+  - git
+  - libffi-devel
+  - libyaml-devel
+  - ncurses-devel
+  - openssl-devel
+  - readline-devel
+  - zlib-devel
+  - autoconf    # old ruby
+  - byacc       # old ruby
+  - subversion  # old ruby
+
+old_openssl_version: "1.0.2u"
+old_openssl_path: "{{ ansible_env.HOME }}/.ruby_depends/openssl-{{ old_openssl_version }}"

@@ -1,0 +1,36 @@
+- name: old openssl | exist check
+  shell: "{{ old_openssl_path }}/bin/openssl version"
+  register: openssl_version
+  changed_when: false
+  failed_when: false
+
+- name: old openssl | mkdir -p
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ ansible_env.HOME }}/src/openssl-{{ old_openssl_version }}"
+    - "{{ old_openssl_path }}"
+
+- name: dl src openssl {{ old_openssl_version }}
+  get_url:
+    url: "https://www.openssl.org/source/openssl-{{ old_openssl_version }}.tar.gz"
+    dest: "{{ ansible_env.HOME }}/src/openssl-{{ old_openssl_version }}.tar.gz"
+
+- name: openssl {{ old_openssl_version }} | unarchive
+  unarchive:
+    src: "{{ ansible_env.HOME }}/src/openssl-{{ old_openssl_version }}.tar.gz"
+    dest: "{{ ansible_env.HOME }}/src/"
+  when: openssl_version.rc != 0
+
+- name: openssl {{ old_openssl_version }} | mkdir -p
+  file:
+    path: "{{ old_openssl_path }}"
+    state: directory
+
+- name: openssl {{ old_openssl_version }} | install
+  shell: "./config --prefix={{ old_openssl_path }} --shared && make && make install"
+  args:
+    chdir: "{{ ansible_env.HOME }}/src/openssl-{{ old_openssl_version }}"
+  when: openssl_version.rc != 0
+  become: true
