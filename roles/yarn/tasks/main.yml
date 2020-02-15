@@ -1,13 +1,11 @@
-- name: rpm key
-  rpm_key:
-    key: https://dl.yarnpkg.com/debian/pubkey.gpg
-    state: present
-  become: true
-
 - name: add repo
-  get_url:
-    url: https://dl.yarnpkg.com/rpm/yarn.repo
-    dest: /etc/yum.repos.d/yarn.repo
+  yum_repository:
+    name: yarn
+    description: yarn repo
+    baseurl: https://dl.yarnpkg.com/rpm/
+    state: present
+    gpgkey: yes
+    gpgkey: https://dl.yarnpkg.com/rpm/pubkey.gpg
   become: true
 
 - name: install
